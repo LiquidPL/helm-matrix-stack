@@ -38,3 +38,16 @@ helm.sh/chart: {{ include "matrix-stack.chart" . }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/part-of: matrix-stack
 {{- end }}
+
+{{- define "matrix-stack.common.image" -}}
+{{- $root := .root -}}
+{{- with required "matrix-stack.well-known.image missing context" .context -}}
+{{- if .digest }}
+image: "{{ .registry }}/{{ .repository }}@{{ .digest }}"
+imagePullPolicy: {{ coalesce .pullPolicy $.root.Values.image.pullPolicy "IfNotPresent" }}
+{{- else }}
+image: "{{ .registry }}/{{ .repository }}:{{ .tag }}"
+imagePullPolicy: {{ coalesce .pullPolicy $.root.Values.image.pullPolicy "Always" }}
+{{- end }}
+{{- end }}
+{{- end }}

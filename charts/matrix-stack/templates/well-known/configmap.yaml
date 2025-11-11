@@ -1,0 +1,56 @@
+{{- with .Values.wellKnownDelegation -}}
+{{- if .enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    {{- include "matrix-stack.well-known.labels" (dict "context" . "root" $) | nindent 4 }}
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  name: {{ include "matrix-stack.fullname" $ }}-well-known-delegation
+  namespace: {{ $.Release.Namespace }}
+data:
+  {{- /* TODO: generalize this for other homeserver types */ -}}
+  {{- with $.Values.synapse }}
+  client: |
+    {{- (dict "m.homeserver" (dict "base_url" (printf "https://%s" .host))) | toPrettyJson | nindent 4 }}
+  server: |
+    {{- (dict "m.server" (printf "%s:443" .host)) | toPrettyJson | nindent 4 }}
+  {{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    {{- include "matrix-stack.well-known.labels" (dict "context" . "root" $) | nindent 4 }}
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  name: {{ include "matrix-stack.fullname" $ }}-well-known-delegation-nginx
+  namespace: {{ $.Release.Namespace }}
+data:
+  default.conf: |
+    server {
+      listen 8080;
+
+      location / {
+        root /usr/share/nginx/html;
+        sendfile on;
+      }
+
+    }
+  health.conf: |
+    server {
+      listen 8081;
+
+      location = /health {
+        access_log off;
+        add_header 'Content-Type' 'text/plain';
+        return 200 'OK\n';
+      }
+    }
+{{- end }}
+{{- end }}

@@ -1,0 +1,22 @@
+{{- with .Values.wellKnownDelegation -}}
+{{- if .enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "matrix-stack.well-known.labels" (dict "context" . "root" $) | nindent 4 }}
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  name: {{ include "matrix-stack.fullname" $ }}-well-known-delegation
+  namespace: {{ $.Release.Namespace }}
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+  selector:
+    {{- include "matrix-stack.well-known.selectorLabels" (dict "context" . "root" $) | nindent 4 }}
+{{- end }}
+{{- end }}

@@ -27,6 +27,7 @@ synapse:
   ## PostgreSQL connection details
   ## Contains the connection credentials for the PostgreSQL
   ## database used for data storage.
+  ##
   ## Values can be provided either directly in the values file,
   ## or as a reference to a Kubernetes secret.
   # postgres:
@@ -170,6 +171,98 @@ synapse:
 
   startupProbe:
     failureThreshold: 30
+    initialDelaySeconds: 0
+    periodSeconds: 2
+    successThreshold: 1
+    timeoutSeconds: 1
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+## Deploys a small Nginx container available at `serverName` serving
+## the well-known files necessary to delegate traffic to the homeserver
+## subdomain.
+wellKnownDelegation:
+  ## This can be disabled if the well-known files are hosted at a different
+  ## location.
+  enabled: true
+
+  image:
+    registry: docker.io
+    repository: nginxinc/nginx-unprivileged
+    tag: 1.29.2-alpine-slim
+    digest: sha256:cc7630eb9e5114d1df794f5d1b962de76bdb7c79c553eea1c22a6c8217f85322
+
+    ## Overrides the default pull policy for this image.
+    # pullPolicy:
+
+    ## Pull secrets that should be used for this image.
+    pullSecrets: []
+
+  annotations: {}
+  labels: {}
+
+  securityContext:
+    privileged: false
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+  podSecurityContext:
+    runAsUser: 1023
+    runAsNonRoot: true
+    runAsGroup: 1023
+    fsGroup: 1023
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile:
+      type: RuntimeDefault
+
+  ## Configuration for the Ingress resource.
+  ingress:
+    ## Whether an Ingress should be created for this component.
+    enabled: false
+
+    ## IngressClass to be used for this Ingress.
+    className:
+
+    ## Additional annotations to be applied to the Ingress resource.
+    annotations: {}
+
+    ## Whether TLS should be enabled for this Ingress.
+    tls: false
+
+  ## Configuration for the HTTPRoute resource.
+  httpRoute:
+    ## Whether a HTTPRoute should be created for this component.
+    enabled: false
+
+    ## Additional annotations to be applied on the HTTPRoute resource.
+    annotations: {}
+
+    ## List of the resources this HTTPRoute should be attached to.
+    parentRefs: []
+
+  livenessProbe:
+    failureThreshold: 6
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 2
+
+  readinessProbe:
+    failureThreshold: 6
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 2
+
+  startupProbe:
+    failureThreshold: 6
     initialDelaySeconds: 0
     periodSeconds: 2
     successThreshold: 1

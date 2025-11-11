@@ -208,6 +208,15 @@
         }
       },
       "required": ["signingKey", "macaroonKey", "host"]
+    },
+    "wellKnownDelegation": {
+      "type": "object",
+      "description": "Deploys a small Nginx container available at `serverName` serving the well-known files necessary to delegate traffic to the homeserver subdomain.",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      }
     }
   },
   "required": ["serverName"],

@@ -14,19 +14,6 @@ app.kubernetes.io/instance: {{ include "matrix-stack.fullname" $.root }}-synapse
 {{- end }}
 {{- end }}
 
-{{- define "matrix-stack.synapse.image" -}}
-{{- $root := .root -}}
-{{- with required "matrix-stack.synapse.image missing context" .context -}}
-{{- if .digest }}
-image: "{{ .registry }}/{{ .repository }}@{{ .digest }}"
-imagePullPolicy: {{ coalesce .pullPolicy $.root.Values.image.pullPolicy "IfNotPresent" }}
-{{- else }}
-image: "{{ .registry }}/{{ .repository }}:{{ .tag }}"
-imagePullPolicy: {{ coalesce .pullPolicy $.root.Values.image.pullPolicy "Always" }}
-{{- end }}
-{{- end }}
-{{- end }}
-
 {{- define "matrix-stack.synapse.postgresSecrets" -}}
 {{- with required "matrix-stack.synapse.postgresSecrets missing context" .context -}}
 {{- $secrets := list -}}

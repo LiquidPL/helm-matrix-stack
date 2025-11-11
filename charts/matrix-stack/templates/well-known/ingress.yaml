@@ -1,0 +1,40 @@
+{{- with .Values.wellKnownDelegation -}}
+{{- if .enabled -}}
+{{- with .ingress -}}
+{{- if .enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    {{- include "matrix-stack.well-known.labels" (dict "context" $.Values.wellKnownDelegation "root" $) | nindent 4 }}
+  {{- with deepCopy $.Values.wellKnownDelegation.annotations | merge .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  name: {{ include "matrix-stack.fullname" $ }}-well-known-delegation
+  namespace: {{ $.Release.Namespace }}
+spec:
+  {{- with .className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  rules:
+    - host: {{ $.Values.serverName }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "matrix-stack.fullname" $ }}-well-known-delegation
+                port:
+                  number: 8080
+  {{- if .tls }}
+  tls:
+    - hosts:
+        - {{ $.Values.serverName }}
+      secretName: {{ include "matrix-stack.fullname" $ }}-well-known-delegation-tls
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -48,3 +48,17 @@ k8s_resource(
         os.getenv('HOMESERVER_HOST'),
     ],
 )
+
+k8s_resource(
+    'matrix-stack-well-known-delegation',
+    new_name='well-known-delegation',
+    objects=[
+        'matrix-stack-well-known-delegation:configmap',
+        'matrix-stack-well-known-delegation-nginx:configmap',
+        'matrix-stack-well-known-delegation:ingress',
+    ],
+    links=[
+        os.getenv('SERVER_NAME') + '/.well-known/matrix/server',
+        os.getenv('SERVER_NAME') + '/.well-known/matrix/client',
+    ],
+)
