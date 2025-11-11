@@ -10,12 +10,6 @@ listeners:
     resources:
       - names: [client, federation]
         compress: false
-{{ if not .postgres }}
-database:
-  name: sqlite3
-  args:
-    database: /data/homeserver.db
-{{- else }}
 {{- with .postgres }}
 database:
   name: psycopg2
@@ -25,7 +19,6 @@ database:
     database: {{ ternary .database.value "__SYNAPSE_POSTGRES_DATABASE__" (hasKey .database "value") }}
     user: {{ ternary .user.value "__SYNAPSE_POSTGRES_USER__" (hasKey .user "value") }}
     password: {{ ternary .password.value "__SYNAPSE_POSTGRES_PASSWORD__" (hasKey .password "value") }}
-{{- end }}
 {{- end }}
 
 log_config: /config/log_config.yaml

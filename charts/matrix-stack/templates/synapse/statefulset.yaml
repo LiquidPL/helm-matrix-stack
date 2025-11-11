@@ -121,11 +121,6 @@ spec:
             - name: media
               mountPath: /media
               readOnly: false
-            {{- if not .postgres }}
-            - name: data
-              mountPath: /data
-              readOnly: false
-            {{- end }}
             - name: tmp
               mountPath: /tmp
               readOnly: false
@@ -167,10 +162,6 @@ spec:
           persistentVolumeClaim:
             claimName: {{ include "matrix-stack.fullname" $ }}-synapse-media
         {{- end }}
-        {{- end }}
-        {{- if not .postgres }}
-        - name: data
-          emptyDir: {}
         {{- end }}
         - name: tmp
           emptyDir:
