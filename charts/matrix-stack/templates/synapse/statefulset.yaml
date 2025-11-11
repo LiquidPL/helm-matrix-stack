@@ -5,9 +5,8 @@ kind: StatefulSet
 metadata:
   labels:
     {{- include "matrix-stack.synapse.labels" (dict "context" . "root" $) | nindent 4 }}
-  annotations:
-    checksum/configmap: {{ include (print $.Template.BasePath "/synapse/configmap.yaml") $ | sha256sum }}
   {{- with .annotations }}
+  annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   name: {{ include "matrix-stack.fullname" $ }}-synapse
@@ -21,8 +20,9 @@ spec:
     metadata:
       labels:
         {{- include "matrix-stack.synapse.labels" (dict "context" . "root" $) | nindent 8 }}
-      {{- with .annotations }}
       annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/synapse/configmap.yaml") $ | sha256sum }}
+      {{- with .annotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
     spec:
