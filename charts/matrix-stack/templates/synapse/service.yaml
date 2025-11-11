@@ -1,0 +1,22 @@
+{{- with .Values.synapse -}}
+{{- if .enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "matrix-stack.synapse.labels" (dict "context" . "root" $) | nindent 4 }}
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  name: {{ include "matrix-stack.fullname" $ }}-synapse
+  namespace: {{ $.Release.Namespace }}
+spec:
+  ports:
+    - name: http
+      port: 8008
+      targetPort: http
+  selector:
+    {{- include "matrix-stack.synapse.selectorLabels" (dict "context" . "root" $) | nindent 4 }}
+{{- end }}
+{{- end }}

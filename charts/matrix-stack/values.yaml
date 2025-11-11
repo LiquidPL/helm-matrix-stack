@@ -1,0 +1,182 @@
+## Name of this Matrix deployment.
+## Serves as the public-facing domain of the homeserver.
+## Cannot be changed after deploying, as it becomes
+## a part of the user IDs.
+serverName: # chat.localhost
+
+image:
+  ## Overrides the default pull policy for all images.
+  ## By default, it is `IfNotPresent` for images
+  ## specified by digest, and `Always` for images specified by tag.
+  # pullPolicy: IfNotPresent
+
+  ## List of pull secrets used for pulling images in this chart.
+  ## Specific components can add to this listusing their respective
+  ## `<component>.pullSecrets` value.
+  pullSecrets: []
+
+## Overrides the name of the chart.
+nameOverride: ""
+
+## Overrides the fully qualified name of the deployed chart.
+fullNameOverride: ""
+
+synapse:
+  enabled: true
+
+  ## PostgreSQL connection details
+  ## Contains the connection credentials for the PostgreSQL
+  ## database used for data storage.
+  ## Values can be provided either directly in the values file,
+  ## or as a reference to a Kubernetes secret.
+  # postgres:
+    # host:
+    #   value: synapse
+    # port:
+    #   value: 5432
+    # database:
+    #   value: synapse
+    # user:
+    #   value: synapse
+
+    # password:
+    #   secretName: postgres-secret
+    #   secretKey: password
+
+  ## Secret containing a key to sign events and federation requests with.
+  # signingKey:
+  #   secretName:
+  #   secretKey:
+
+  ## Secret containing a key used to sign various other Synapse tokens.
+  ## See https://element-hq.github.io/synapse/latest/usage/configuration/config_documentation.html#macaroon_secret_key for more details.
+  # macaroonKey:
+  #   secretName:
+  #   secretKey:
+
+  ## Configuration of the Synapse media store
+  media:
+    persistence:
+      ## Whether persistence should be enabled for the Synapse media store.
+      ## By default, this will create a PersistentVolumeClaim to store the media.
+      enabled: true
+
+      ## Name for an already existing PersistentVolumeClaim that should be used
+      ## to store Synapse media, instead of the one created by default.
+      # existingClaim:
+
+      ## Size of the default PersistentVolumeClaim.
+      ## Ignored if `existingClaim` is set.
+      size: 5Gi
+
+      ## The storage class to be used by the default PersistentVolumeClaim.
+      ## Ignored if `existingClaim` is set.
+      # storageClassName:
+
+      ## Access mode to be used by the default PersistentVolumeClaim.
+      ## Ignored if `existingClaim` is set.
+      # accessMode: ReadWriteOnce
+
+      ## Whether Helm should keep or delete the default PersistentVolumeClaim
+      ## when uninistalling the chart.
+      ## Ignored if `existingClaim` is set.
+      resourcePolicy: keep
+
+    ## The largest allowed upload size to the Synapse media store.
+    ## For more details see https://element-hq.github.io/synapse/latest/usage/configuration/config_documentation.html#max_upload_size.
+    maxUploadSize: 50M
+
+  image:
+    registry: ghcr.io
+    repository: element-hq/synapse
+    tag: v1.141.0
+    digest: sha256:562adbfc3df12d1024c7277b9807086ed79d8d5fabe24187a31d787af050a6a4
+
+    ## Overrides the default pull policy for this image.
+    # pullPolicy:
+
+    ## Pull secrets that should be used for this image.
+    pullSecrets: []
+
+  annotations: {}
+  labels: {}
+
+  securityContext:
+    privileged: false
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+  podSecurityContext:
+    runAsUser: 1023
+    runAsNonRoot: true
+    runAsGroup: 1023
+    fsGroup: 1023
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile:
+      type: RuntimeDefault
+
+  ## Hostname of this Synapse deployment.
+  host: # matrix.chat.localhost
+
+  ## Configuration for the Ingress resource.
+  ingress:
+    ## Whether an Ingress should be created for this component.
+    enabled: false
+
+    ## IngressClass to be used for this Ingress.
+    className:
+
+    ## Additional annotations to be applied to the Ingress resource.
+    annotations: {}
+
+    ## Whether TLS should be enabled for this Ingress.
+    tls: false
+
+  ## Configuration for the HTTPRoute resource.
+  httpRoute:
+    ## Whether a HTTPRoute should be created for this component.
+    enabled: false
+
+    ## Additional annotations to be applied on the HTTPRoute resource.
+    annotations: {}
+
+    ## List of the resources this HTTPRoute should be attached to.
+    parentRefs: []
+
+  # resources:
+  #   requests:
+  #     cpu:
+  #     memory:
+  #   limits:
+  #     cpu:
+  #     memory:
+
+  livenessProbe:
+    failureThreshold: 6
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 2
+
+  readinessProbe:
+    failureThreshold: 6
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 2
+
+  startupProbe:
+    failureThreshold: 30
+    initialDelaySeconds: 0
+    periodSeconds: 2
+    successThreshold: 1
+    timeoutSeconds: 1
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}

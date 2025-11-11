@@ -1,0 +1,282 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "file:///matrix-stack",
+  "title": "",
+  "description": "",
+  "type": "object",
+  "properties": {
+    "serverName": {
+      "type": "string",
+      "title": "Name of this Matrix deployment",
+      "description": "Serves as the public-facing domain of the homeserver. Cannot be changed after deploying, as it a part of the user IDs."
+    },
+    "image": {
+      "type": "object",
+      "title": "Common image settings",
+      "properties": {
+        "pullPolicy": {
+          "type": "string",
+          "description": "Overrides the default pull policy for all images. By default, it is `IfNotPresent` for images specified by digest, and `Always` for images specified by tag."
+        },
+        "pullSecrets": {
+          "$ref": "#/$defs/pullSecrets",
+          "description": "List of pull secrets used for pulling images in this chart. Specific components can add to this listusing their respective `<component>.pullSecrets` value."
+        }
+      }
+    },
+    "nameOverride": {
+      "type": "string",
+      "description": "Overrides the name of the chart."
+    },
+    "fullnameOverride": {
+      "type": "string",
+      "description": "Overrides the fully qualified name of the deployed chart."
+    },
+    "synapse": {
+      "type": "object",
+      "title": "Configuration of the Synapse homeserver",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Enabled",
+          "description": "Whether Synapse should be enabled in this deployment"
+        },
+        "postgres": {
+          "type": "object",
+          "title": "PostgreSQL connection details",
+          "description": "Contains the connection credentials for the PostgreSQL database used for data storage. Values can be provided either directly in the values file, or as a reference to a Kubernetes secret.",
+          "properties": {
+            "host": {
+              "title": "Hostname",
+              "$ref": "#/$defs/secretValueString"
+             },
+            "port": {
+              "title": "Port",
+              "$ref": "#/$defs/secretValueInteger"
+            },
+            "database": {
+              "title": "Database name",
+              "$ref": "#/$defs/secretValueString"
+             },
+            "user": {
+              "title": "User name",
+              "$ref": "#/$defs/secretValueString"
+             },
+            "password": {
+              "title": "Password",
+              "$ref": "#/$defs/secretValueString"
+             }
+          },
+          "required": ["host", "database", "user", "password"]
+        },
+        "signingKey": {
+          "title": "Signing key",
+          "$ref": "#/$defs/secret",
+          "description": "Secret containing a key to sign events and federation requests with."
+        },
+        "macaroonKey": {
+          "title": "Macaroon key",
+          "$ref": "#/$defs/secret",
+          "description": "Secret containing a key used to sign various other Synapse tokens."
+        },
+        "media": {
+          "type": "object",
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Whether persistence should be configured for the Synapse media store. By default, this will create a PersistentVolumeClaim to store the media."
+                },
+                "existingClaim": {
+                  "type": "string",
+                  "description": "Name for an already existing PersistentVolumeClaim that should be used to store Synapse media, instead of the one created by default."
+                },
+                "size": {
+                  "type": "string",
+                  "description": "Size of the default PersistentVolumeClaim. Ignored if `existingClaim` is set."
+                },
+                "storageClassName": {
+                  "type": "string",
+                  "description": "The storage class to be used by the default PersistentVolumeClaim. Ignored if `existingClaim` is set."
+                },
+                "accessMode": {
+                  "type": "string",
+                  "description": "Access mode to be used by the default PersistentVolumeClaim. Ignored if `existingClaim` is set."
+                },
+                "resourcePolicy": {
+                  "type": "string",
+                  "enum": ["keep", "delete"],
+                  "description": "Whether Helm should keep or delete the default PersistentVolumeClaim when uninistalling the chart. Ignored if `existingClaim` is set."
+                }
+              }
+            },
+            "maxUploadSize": {
+              "type": "string",
+              "pattern": "^\\d+(K|M|G|T)$",
+              "description": "The largest allowed upload size to the Synapse media store."
+            }
+          }
+        },
+        "image": {
+          "type": "object",
+          "properties": {
+            "registry": {
+              "type": "string"
+            },
+            "repository": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string"
+            },
+            "digest": {
+              "type": "string"
+            },
+            "pullPolicy": {
+              "type": "string",
+              "description": "Overrides the default pull policy for this image."
+            },
+            "pullSecrets": {
+              "$ref": "#/$defs/pullSecrets",
+              "description": "Pull secrets that should be used for this image."
+            }
+          }
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "host": {
+          "type": "string",
+          "description": "Hostname of this Synapse deployment."
+        },
+        "ingress": {
+          "type": "object",
+          "description": "Configuration for the Ingress resource.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Whether an Ingress should be created for this component."
+            },
+            "className": {
+              "type": "string",
+              "description": "IngressClass to be used for this Ingress."
+            },
+            "annotations": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "Additional annotations to be applied to the Ingress resource."
+            },
+            "tls": {
+              "type": "boolean",
+              "description": "Whether TLS should be enabled for this Ingress."
+            }
+          }
+        },
+        "httpRoute": {
+          "type": "object",
+          "description": "Configuration for the HTTPRoute resource.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Whether a HTTPRoute should be created for this component."
+            },
+            "annotations": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "Additional annotations to be applied on the HTTPRoute resource."
+            },
+            "parentRefs": {
+              "type": "array",
+              "description": "List of the resources this HTTPRoute should be attached to."
+            }
+          }
+        }
+      },
+      "required": ["signingKey", "macaroonKey", "host"]
+    }
+  },
+  "required": ["serverName"],
+  "$defs": {
+    "secret": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "file:///matrix-stack/schemas/secret",
+      "type": "object",
+      "properties": {
+        "secretName": {
+          "type": "string",
+          "description": "Name of Kubernetes secret the value should be pulled from"
+        },
+        "secretKey": {
+          "type": "string",
+          "description": "Key of Kubernetes secret specified in `secretName` the value should be pulled from"
+        }
+      },
+      "dependentRequired": {
+        "secretName": ["secretKey"],
+        "secretKey": ["secretName"]
+      }
+    },
+    "secretValue": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "file:///matrix-stack/schemas/secretValue",
+      "type": "object",
+      "properties": {
+        "value": {
+          "description": "Plaintext value, to be inserted directly into the chart"
+        }
+      },
+      "if": { "required": ["value"] },
+      "then": {
+        "not": {
+          "required": ["secretName", "secretKey"]
+        }
+      }
+    },
+    "secretValueString": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "file:///matrix-stack/schemas/secretValueString",
+      "type": "object",
+      "allOf": [
+        { "value": { "type": "string" } },
+        { "$ref": "file:///matrix-stack/schemas/secretValue" },
+        { "$ref": "file:///matrix-stack/schemas/secret" }
+      ]
+    },
+    "secretValueInteger": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "file:///matrix-stack/schemas/secretValueInteger",
+      "type": "object",
+      "allOf": [
+        { "value": { "type": "integer" } },
+        { "$ref": "file:///matrix-stack/schemas/secretValue" },
+        { "$ref": "file:///matrix-stack/schemas/secret" }
+      ]
+    },
+    "pullSecrets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{{- with .Values.synapse -}}
+{{- if .enabled -}}
+{{- with .ingress -}}
+{{- if .enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    {{- include "matrix-stack.synapse.labels" (dict "context" $.Values.synapse "root" $) | nindent 4 }}
+  {{- with deepCopy $.Values.synapse.annotations | merge .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  name: {{ include "matrix-stack.fullname" $ }}-synapse
+  namespace: {{ $.Release.Namespace }}
+spec:
+  {{- with .className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  rules:
+    - host: {{ $.Values.synapse.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "matrix-stack.fullname" $ }}-synapse
+                port:
+                  number: 8008
+  {{- if .tls }}
+  tls:
+    - hosts:
+        - {{ $.Values.synapse.host }}
+      secretName: {{ include "matrix-stack.fullname" $ }}-synapse-tls
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

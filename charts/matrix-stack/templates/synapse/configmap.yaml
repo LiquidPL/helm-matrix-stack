@@ -1,0 +1,20 @@
+{{- with .Values.synapse -}}
+{{- if .enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    {{- include "matrix-stack.synapse.labels" (dict "context" . "root" $) | nindent 4 }}
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  name: {{ include "matrix-stack.fullname" $ }}-synapse
+  namespace: {{ $.Release.Namespace }}
+data:
+  homeserver.yaml: |
+    {{- (tpl ($.Files.Get "config/synapse/homeserver.yaml.tpl") (dict "context" . "root" $)) | nindent 4 }}
+  log_config.yaml: |
+    {{- $.Files.Get "config/synapse/log_config.yaml" | nindent 4}}
+{{- end }}
+{{- end }}

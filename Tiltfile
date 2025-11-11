@@ -1,4 +1,10 @@
+load('ext://dotenv', 'dotenv')
+load('ext://namespace', 'namespace_create')
 load('ext://helm_resource', 'helm_resource', 'helm_repo')
+
+dotenv()
+
+namespace_create('matrix-stack')
 
 helm_resource(
     'ingress-nginx',
@@ -37,7 +43,8 @@ k8s_resource(
         'matrix-stack-synapse:ingress',
         'matrix-stack-synapse-media:persistentvolumeclaim',
     ],
+    resource_deps=['postgres-synapse'],
     links=[
-        'matrix.localhost',
+        os.getenv('HOMESERVER_HOST'),
     ],
 )

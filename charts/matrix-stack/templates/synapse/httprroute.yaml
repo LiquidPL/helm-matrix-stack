@@ -1,0 +1,36 @@
+{{- with .Values.synapse -}}
+{{- if .enabled -}}
+{{- with .httpRoute -}}
+{{- if .enabled -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  labels:
+    {{- include "matrix-stack.synapse.labels" (dict "context" $.Values.synapse "root" $) | nindent 4 }}
+  {{- with deepCopy $.Values.synapse.annotations | merge .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  name: {{ include "matrix-stack.fullname" $ }}-synapse
+  namespace: {{ $.Release.Namespace }}
+spec:
+  {{- with .parentRefs}}
+  parentRefs:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  hostnames:
+    - {{ $.Values.synapse.host }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: {{ include "matrix-stack.fullname" $ }}-synapse
+          port: 8008
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

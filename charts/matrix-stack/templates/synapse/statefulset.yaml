@@ -1,0 +1,192 @@
+{{- with .Values.synapse -}}
+{{- if .enabled -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    {{- include "matrix-stack.synapse.labels" (dict "context" . "root" $) | nindent 4 }}
+  annotations:
+    checksum/configmap: {{ include (print $.Template.BasePath "/synapse/configmap.yaml") $ | sha256sum }}
+  {{- with .annotations }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  name: {{ include "matrix-stack.fullname" $ }}-synapse
+  namespace: {{ $.Release.Namespace }}
+spec:
+  serviceName: {{ include "matrix-stack.fullname" $ }}-synapse
+  selector:
+    matchLabels:
+      {{- include "matrix-stack.synapse.selectorLabels" (dict "context" . "root" $) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "matrix-stack.synapse.labels" (dict "context" . "root" $) | nindent 8 }}
+      {{- with .annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- with (concat .image.pullSecrets $.Values.image.pullSecrets) | uniq }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: render-config
+          image: docker.io/mikefarah/yq:4.48.1@sha256:75b3a60dce1fa4641b0f02bdb4465eddc5da95e62028118a292239ca8e3921e5
+          command: ['/bin/sh']
+          args:
+            - -c
+            - >-
+              yq '
+                {{- with .postgres }}
+                {{- $secrets := include "matrix-stack.synapse.postgresSecrets" (dict "context" . "root" $) | fromJsonArray -}}
+                {{- $len := len $secrets -}}
+                {{- range $i, $secret := $secrets }}
+                (.. | select(. == "__SYNAPSE_POSTGRES_{{ $secret.property | upper }}__")) = load("/secrets/postgres-{{ $secret.property }}/{{ $secret.secretKey }}"){{ if lt $i (sub $len 1) }} |{{ end }}
+                {{- end }}
+                {{- end }}
+              ' /templates/homeserver.yaml > /config/homeserver.yaml
+          {{- with .resources }}
+          resources:
+            {{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: config-initial
+              mountPath: /templates
+              readOnly: true
+            - name: config-rendered
+              mountPath: /config
+              readOnly: false
+            {{- with .postgres }}
+            {{- range $secret := include "matrix-stack.synapse.postgresSecrets" (dict "context" . "root" $) | fromJsonArray }}
+            - name: postgres-{{ $secret.property }}
+              mountPath: /secrets/postgres-{{ $secret.property }}
+              readOnly: true
+            {{- end }}
+            {{- end }}
+      containers:
+        - name: synapse
+          {{- include "matrix-stack.synapse.image" (dict "context" .image "root" $) | indent 10 }}
+          command:
+            - python3
+            - -m
+            - synapse.app.homeserver
+            - -c
+            - /config/homeserver.yaml
+          ports:
+            - containerPort: 8008
+              name: http
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .livenessProbe | nindent 12 }}
+            httpGet:
+              path: /health
+              port: http
+          readinessProbe:
+            {{- toYaml .readinessProbe | nindent 12 }}
+            httpGet:
+              path: /health
+              port: http
+          startupProbe:
+            {{- toYaml .startupProbe | nindent 12 }}
+            httpGet:
+              path: /health
+              port: http
+          {{- with .resources }}
+          resources:
+            {{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: config-rendered
+              mountPath: /config/homeserver.yaml
+              subPath: homeserver.yaml
+              readOnly: true
+            - name: config-initial
+              mountPath: /config/log_config.yaml
+              subPath: log_config.yaml
+              readOnly: true
+            - name: signing-key
+              mountPath: /secrets/signing-key
+              readOnly: false
+            - name: macaroon-key
+              mountPath: /secrets/macaroon-key
+              readOnly: false
+            - name: media
+              mountPath: /media
+              readOnly: false
+            {{- if not .postgres }}
+            - name: data
+              mountPath: /data
+              readOnly: false
+            {{- end }}
+            - name: tmp
+              mountPath: /tmp
+              readOnly: false
+      {{- with .podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: config-initial
+          configMap:
+            name: {{ include "matrix-stack.fullname" $ }}-synapse
+        - name: config-rendered
+          emptyDir:
+            medium: Memory
+        - name: signing-key
+          secret:
+            secretName: {{ .signingKey.secretName }}
+            defaultMode: 0400
+        - name: macaroon-key
+          secret:
+            secretName: {{ .macaroonKey.secretName }}
+            defaultMode: 0400
+        {{- with .postgres }}
+        {{- range $secret := include "matrix-stack.synapse.postgresSecrets" (dict "context" . "root" $) | fromJsonArray }}
+        - name: postgres-{{ $secret.property }}
+          secret:
+            secretName: {{ $secret.secretName }}
+            defaultMode: 0400
+        {{- end }}
+        {{- end }}
+        {{- with .media.persistence }}
+        - name: media
+        {{- if not .enabled }}
+          emptyDir: {}
+        {{- else if .existingClaim }}
+          persistentVolumeClaim:
+            claimName: {{ .existingClaim }}
+        {{- else }}
+          persistentVolumeClaim:
+            claimName: {{ include "matrix-stack.fullname" $ }}-synapse-media
+        {{- end }}
+        {{- end }}
+        {{- if not .postgres }}
+        - name: data
+          emptyDir: {}
+        {{- end }}
+        - name: tmp
+          emptyDir:
+            medium: Memory
+      {{- with .nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
+{{- end }}

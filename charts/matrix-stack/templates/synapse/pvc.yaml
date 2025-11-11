@@ -1,0 +1,26 @@
+{{- with .Values.synapse -}}
+{{- if .enabled -}}
+{{- with .media.persistence -}}
+{{- if and .enabled (not .existingClaim)  -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    {{- include "matrix-stack.synapse.labels" (dict "context" $.Values.synapse "root" $) | nindent 4 }}
+  annotations:
+    helm.sh/resource-policy: {{ .resourcePolicy }}
+  name: {{ include "matrix-stack.fullname" $ }}-synapse-media
+  namespace: {{ $.Release.Namespace }}
+spec:
+  {{- with .storageClassName }}
+    storageClassName: {{ . }}
+  {{- end }}
+  accessModes:
+    - {{ .accessMode | default "ReadWriteOnce" }}
+  resources:
+    requests:
+      storage: {{ .size }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
