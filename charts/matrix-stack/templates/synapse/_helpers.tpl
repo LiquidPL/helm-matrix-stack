@@ -41,7 +41,7 @@ app.kubernetes.io/instance: {{ include "matrix-stack.fullname" $.root }}-synapse
 {{- if hasKey . "secretName" -}}
 {{- $secrets = append $secrets (set . "property" "password") -}}
 {{- end }}
-{{ $secrets | uniq | toJson }}
 {{- end }}
+{{ $secrets | uniq | toJson }}
 {{- end }}
 {{- end }}
