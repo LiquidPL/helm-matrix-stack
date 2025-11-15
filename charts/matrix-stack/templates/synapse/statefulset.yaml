@@ -11,7 +11,7 @@ spec:
   serviceName: {{ include "matrix-stack.fullname" $ }}-synapse
   selector:
     matchLabels:
-      {{- include "matrix-stack.synapse.selectorLabels" (dict "context" . "root" $) | nindent 6 }}
+      {{- include "matrix-stack.synapse.selector-labels" (dict "context" . "root" $) | nindent 6 }}
   template:
     metadata:
       labels:
@@ -38,7 +38,7 @@ spec:
             - >-
               yq '
                 {{- with .postgres }}
-                {{- $secrets := include "matrix-stack.synapse.postgresSecrets" (dict "context" . "root" $) | fromJsonArray -}}
+                {{- $secrets := include "matrix-stack.synapse.postgres-secrets" (dict "context" . "root" $) | fromJsonArray -}}
                 {{- $len := len $secrets -}}
                 {{- range $i, $secret := $secrets }}
                 (.. | select(. == "__SYNAPSE_POSTGRES_{{ $secret.property | upper }}__")) = load("/secrets/postgres-{{ $secret.property }}/{{ $secret.secretKey }}"){{ if lt $i (sub $len 1) }} |{{ end }}
@@ -61,7 +61,7 @@ spec:
               mountPath: /config
               readOnly: false
             {{- with .postgres }}
-            {{- range $secret := include "matrix-stack.synapse.postgresSecrets" (dict "context" . "root" $) | fromJsonArray }}
+            {{- range $secret := include "matrix-stack.synapse.postgres-secrets" (dict "context" . "root" $) | fromJsonArray }}
             - name: postgres-{{ $secret.property }}
               mountPath: /secrets/postgres-{{ $secret.property }}
               readOnly: true
@@ -132,7 +132,7 @@ spec:
             medium: Memory
         {{- include "matrix-stack.common.secret-volumes" (dict "context" (dict "component" "synapse") "root" $) | indent 8 }}
         {{- with .postgres }}
-        {{- range $secret := include "matrix-stack.synapse.postgresSecrets" (dict "context" . "root" $) | fromJsonArray }}
+        {{- range $secret := include "matrix-stack.synapse.postgres-secrets" (dict "context" . "root" $) | fromJsonArray }}
         - name: postgres-{{ $secret.property }}
           secret:
             secretName: {{ $secret.secretName }}

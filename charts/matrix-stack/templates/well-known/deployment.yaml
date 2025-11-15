@@ -14,7 +14,7 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "matrix-stack.well-known.selectorLabels" (dict "context" . "root" $) | nindent 6 }}
+      {{- include "matrix-stack.well-known.selector-labels" (dict "context" . "root" $) | nindent 6 }}
   template:
     metadata:
       labels:

@@ -17,6 +17,6 @@ spec:
       port: 8008
       targetPort: http
   selector:
-    {{- include "matrix-stack.synapse.selectorLabels" (dict "context" . "root" $) | nindent 4 }}
+    {{- include "matrix-stack.synapse.selector-labels" (dict "context" . "root" $) | nindent 4 }}
 {{- end }}
 {{- end }}
