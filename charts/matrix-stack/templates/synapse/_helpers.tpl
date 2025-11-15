@@ -1,5 +1,5 @@
 {{- define "matrix-stack.synapse.labels" -}}
-{{- with required "missing matrix-stack.synapse.labels context" .context -}}
+{{- with required "matrix-stack.synapse.labels missing context" .context -}}
 {{ include "matrix-stack.common.labels" $.root }}
 {{ include "matrix-stack.synapse.selectorLabels" (dict "context" . "root" $.root) }}
 app.kubernetes.io/component: matrix-server
@@ -8,9 +8,37 @@ app.kubernetes.io/version: {{ .image.tag }}
 {{- end }}
 
 {{- define "matrix-stack.synapse.selectorLabels" -}}
-{{- with required "missing matrix-stack.synapse.selectorLabels context" .context -}}
+{{- with required "matrix-stack.synapse.selectorLabels missing context" .context -}}
 app.kubernetes.io/name: synapse
 app.kubernetes.io/instance: {{ include "matrix-stack.fullname" $.root }}-synapse
+{{- end }}
+{{- end }}
+
+{{- define "matrix-stack.synapse.generated-secrets" -}}
+{{- $root := .root -}}
+{{- with required "matrix-stack.synapse.generated-secrets missing context" .context -}}
+{{- if not .signingKey }}
+- secretName: {{ include "matrix-stack.fullname" $root }}-synapse-generated
+  secretKey: SYNAPSE_SIGNING_KEY
+  type: signingkey
+{{- end }}
+{{- if not .macaroonKey }}
+- secretName: {{ include "matrix-stack.fullname" $root }}-synapse-generated
+  secretKey: SYNAPSE_MACAROON_KEY
+  type: rand32
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- define "matrix-stack.synapse.provided-secrets" -}}
+{{- $root := .root -}}
+{{- with required "matrix-stack.synapse.provided-secrets missing context" .context }}
+{{- with .signingKey }}
+{{ list . | toYaml }}
+{{- end }}
+{{- with .macaroonKey }}
+{{ list . | toYaml }}
+{{- end }}
 {{- end }}
 {{- end }}
 

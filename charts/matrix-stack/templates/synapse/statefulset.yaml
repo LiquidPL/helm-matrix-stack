@@ -112,12 +112,7 @@ spec:
               mountPath: /config/log_config.yaml
               subPath: log_config.yaml
               readOnly: true
-            - name: signing-key
-              mountPath: /secrets/signing-key
-              readOnly: false
-            - name: macaroon-key
-              mountPath: /secrets/macaroon-key
-              readOnly: false
+            {{- include "matrix-stack.common.secret-volumemounts" (dict "context" (dict "component" "synapse") "root" $) | indent 12 }}
             - name: media
               mountPath: /media
               readOnly: false
@@ -135,14 +130,7 @@ spec:
         - name: config-rendered
           emptyDir:
             medium: Memory
-        - name: signing-key
-          secret:
-            secretName: {{ .signingKey.secretName }}
-            defaultMode: 0400
-        - name: macaroon-key
-          secret:
-            secretName: {{ .macaroonKey.secretName }}
-            defaultMode: 0400
+        {{- include "matrix-stack.common.secret-volumes" (dict "context" (dict "component" "synapse") "root" $) | indent 8 }}
         {{- with .postgres }}
         {{- range $secret := include "matrix-stack.synapse.postgresSecrets" (dict "context" . "root" $) | fromJsonArray }}
         - name: postgres-{{ $secret.property }}

@@ -207,7 +207,7 @@
           }
         }
       },
-      "required": ["signingKey", "macaroonKey", "host"]
+      "required": ["host"]
     },
     "wellKnownDelegation": {
       "type": "object",

@@ -27,6 +27,22 @@ max_upload_size: {{ .media.maxUploadSize }}
 
 report_stats: false
 
-signing_key_path: /secrets/signing-key/{{ .signingKey.secretKey }}
-macaroon_secret_key_path: /secrets/macaroon-key/{{ .macaroonKey.secretKey }}
+signing_key_path: /secrets/{{
+  include "matrix-stack.common.secret-path" (dict
+    "root" $root
+    "context" (dict
+      "valuePath" "synapse.signingKey"
+      "initSecretKey" "SYNAPSE_SIGNING_KEY"
+    )
+  )
+}}
+macaroon_secret_key_path: /secrets/{{
+  include "matrix-stack.common.secret-path" (dict
+    "root" $root
+    "context" (dict
+      "valuePath" "synapse.macaroonKey"
+      "initSecretKey" "SYNAPSE_MACAROON_KEY"
+    )
+  )
+}}
 {{- end }}

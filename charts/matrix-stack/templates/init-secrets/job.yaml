@@ -1,0 +1,46 @@
+{{- with .Values.initSecrets -}}
+{{- if and .enabled (include "matrix-stack.init-secrets.generated-secrets" (dict "context" . "root" $)) -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-10"
+  labels:
+    {{- include "matrix-stack.init-secrets.labels" (dict "context" . "root" $) | nindent 4 }}
+  name: {{ include "matrix-stack.fullname" $ }}-init-secrets
+  namespace: {{ $.Release.Namespace }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "matrix-stack.init-secrets.labels" (dict "context" . "root" $) | nindent 8 }}
+      {{- with .labels }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      restartPolicy: OnFailure
+      automountServiceAccountToken: true
+      serviceAccountName: {{ include "matrix-stack.fullname" $ }}-init-secrets
+      containers:
+        - name: init-secrets
+          {{- include "matrix-stack.common.image" (dict "context" .image "root" $) | indent 10 }}
+          args:
+            - generate-secrets
+            - -secrets
+              {{- $secrets := list -}}
+              {{- range (include "matrix-stack.init-secrets.generated-secrets" (dict "context" . "root" $) | fromYamlArray) -}}
+              {{- $secrets = append $secrets (printf "%s:%s:%s" .secretName .secretKey .type) -}}
+              {{- end }}
+            - {{ $secrets | join "," | quote }}
+            - -labels
+            - {{ include "matrix-stack.init-secrets.labels" (dict "context" . "root" $) | trim | replace ": " "=" | replace "\n" "," | quote }}
+          env:
+            - name: NAMESPACE
+              value: {{ $.Release.Namespace }}
+{{- end }}
+{{- end }}
