@@ -40,11 +40,15 @@ generated/{{ $initSecretKey }}
     secretName: generated
     defaultMode: 0400
 {{- end }}
+{{- $usedSecrets := list -}}
 {{- range (include (printf "matrix-stack.%s.provided-secrets" $component) (dict "context" (get $root.Values $component) "root" $root) | fromYamlArray) }}
+{{- if not (has .secretName $usedSecrets) }}
 - name: provided-{{ .secretName }}
   secret:
     secretName: {{ .secretName }}
     defaultMode: 0400
+{{- $usedSecrets = append $usedSecrets .secretName -}}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -58,10 +62,14 @@ generated/{{ $initSecretKey }}
   mountPath: /secrets/generated
   readOnly: true
 {{- end }}
+{{- $usedSecrets := list -}}
 {{- range (include (printf "matrix-stack.%s.provided-secrets" $component) (dict "context" (get $root.Values $component) "root" $root) | fromYamlArray) }}
+{{- if not (has .secretName $usedSecrets) }}
 - name: provided-{{ .secretName }}
   mountPath: /secrets/provided-{{ .secretName }}
   defaultMode: 0400
+{{- $usedSecrets = append $usedSecrets .secretName -}}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

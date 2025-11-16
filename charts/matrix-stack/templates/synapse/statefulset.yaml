@@ -38,11 +38,11 @@ spec:
             - >-
               yq '
                 {{- with .postgres }}
-                {{- $secrets := include "matrix-stack.synapse.postgres-secrets" (dict "context" . "root" $) | fromJsonArray -}}
-                {{- $len := len $secrets -}}
-                {{- range $i, $secret := $secrets }}
-                (.. | select(. == "__SYNAPSE_POSTGRES_{{ $secret.property | upper }}__")) = load("/secrets/postgres-{{ $secret.property }}/{{ $secret.secretKey }}"){{ if lt $i (sub $len 1) }} |{{ end }}
+                {{- $secrets := list -}}
+                {{- range (include "matrix-stack.synapse.postgres-secrets" (dict "context" . "root" $) | fromYamlArray) -}}
+                {{- $secrets = append $secrets (printf "(.. | select(. == \"__SYNAPSE_POSTGRES_%s__\")) = load(\"/secrets/provided-%s/%s\")" (.property | upper) .secretName .secretKey) -}}
                 {{- end }}
+                {{ $secrets | join " | " }}
                 {{- end }}
               ' /templates/homeserver.yaml > /config/homeserver.yaml
           {{- with .resources }}
@@ -60,13 +60,7 @@ spec:
             - name: config-rendered
               mountPath: /config
               readOnly: false
-            {{- with .postgres }}
-            {{- range $secret := include "matrix-stack.synapse.postgres-secrets" (dict "context" . "root" $) | fromJsonArray }}
-            - name: postgres-{{ $secret.property }}
-              mountPath: /secrets/postgres-{{ $secret.property }}
-              readOnly: true
-            {{- end }}
-            {{- end }}
+            {{- include "matrix-stack.common.secret-volumemounts" (dict "context" (dict "component" "synapse" "renderConfig" true) "root" $) | indent 12 }}
       containers:
         - name: synapse
           {{- include "matrix-stack.common.image" (dict "context" .image "root" $) | indent 10 }}
@@ -131,14 +125,6 @@ spec:
           emptyDir:
             medium: Memory
         {{- include "matrix-stack.common.secret-volumes" (dict "context" (dict "component" "synapse") "root" $) | indent 8 }}
-        {{- with .postgres }}
-        {{- range $secret := include "matrix-stack.synapse.postgres-secrets" (dict "context" . "root" $) | fromJsonArray }}
-        - name: postgres-{{ $secret.property }}
-          secret:
-            secretName: {{ $secret.secretName }}
-            defaultMode: 0400
-        {{- end }}
-        {{- end }}
         {{- with .media.persistence }}
         - name: media
         {{- if not .enabled }}

@@ -39,6 +39,7 @@ app.kubernetes.io/instance: {{ include "matrix-stack.fullname" $.root }}-synapse
 {{- with .macaroonKey }}
 {{ list . | toYaml }}
 {{- end }}
+{{- include "matrix-stack.synapse.postgres-secrets" (dict "context" .postgres "root" $) }}
 {{- end }}
 {{- end }}
 
@@ -70,6 +71,6 @@ app.kubernetes.io/instance: {{ include "matrix-stack.fullname" $.root }}-synapse
 {{- $secrets = append $secrets (set . "property" "password") -}}
 {{- end }}
 {{- end }}
-{{ $secrets | uniq | toJson }}
+{{ $secrets | toYaml }}
 {{- end }}
 {{- end }}
