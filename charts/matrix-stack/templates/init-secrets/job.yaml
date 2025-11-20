@@ -11,6 +11,7 @@ metadata:
   name: {{ include "matrix-stack.fullname" $ }}-init-secrets
   namespace: {{ $.Release.Namespace }}
 spec:
+  ttlSecondsAfterFinished: 300
   template:
     metadata:
       labels:
