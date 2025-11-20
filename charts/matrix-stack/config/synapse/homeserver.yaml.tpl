@@ -1,5 +1,6 @@
 {{- $root := .root -}}
 {{- with required "synapse/homeserver.yaml.tpl missing context" .context -}}
+public_baseurl: https://{{ .host }}/
 server_name: {{ $root.Values.serverName }}
 
 listeners:
