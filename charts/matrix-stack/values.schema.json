@@ -71,12 +71,12 @@
         },
         "signingKey": {
           "title": "Signing key",
-          "$ref": "#/$defs/secret",
+          "$ref": "#/$defs/secretValueString",
           "description": "Secret containing a key to sign events and federation requests with."
         },
         "macaroonKey": {
           "title": "Macaroon key",
-          "$ref": "#/$defs/secret",
+          "$ref": "#/$defs/secretValueString",
           "description": "Secret containing a key used to sign various other Synapse tokens."
         },
         "media": {
@@ -261,7 +261,7 @@
       "$id": "file:///matrix-stack/schemas/secretValueString",
       "type": "object",
       "allOf": [
-        { "value": { "type": "string" } },
+        { "properties": { "value": { "type": "string" } } },
         { "$ref": "file:///matrix-stack/schemas/secretValue" },
         { "$ref": "file:///matrix-stack/schemas/secret" }
       ]
@@ -271,7 +271,7 @@
       "$id": "file:///matrix-stack/schemas/secretValueInteger",
       "type": "object",
       "allOf": [
-        { "value": { "type": "integer" } },
+        { "properties": { "value": { "type": "integer" } } },
         { "$ref": "file:///matrix-stack/schemas/secretValue" },
         { "$ref": "file:///matrix-stack/schemas/secret" }
       ]

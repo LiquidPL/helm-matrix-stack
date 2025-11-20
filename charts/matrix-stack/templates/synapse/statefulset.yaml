@@ -40,14 +40,21 @@ spec:
                 {{- with .postgres }}
                 {{- $secrets := list -}}
                 {{- range (include "matrix-stack.synapse.postgres-secrets" (dict "context" . "root" $) | fromYamlArray) -}}
-                {{- $secrets = append $secrets (printf "(.. | select(. == \"__SYNAPSE_POSTGRES_%s__\")) = load(\"/secrets/provided-%s/%s\")" (.property | upper) .secretName .secretKey) -}}
+                {{ $secretPath := include "matrix-stack.common.secret-path" (dict
+                  "context" (dict
+                    "valuePath" (printf "synapse.postgres.%s" .property)
+                    "initSecretKey" (include (printf "matrix-stack.synapse.secret-keys.postgres-%s" .property) .)
+                  )
+                  "root" $
+                ) }}
+                {{- $secrets = append $secrets (printf "(.. | select(. == \"__SYNAPSE_POSTGRES_%s__\")) = load(\"/secrets/%s\")" (.property | upper) $secretPath) -}}
                 {{- end }}
                 {{ $secrets | join " | " }}
                 {{- end }}
               ' /templates/homeserver.yaml > /config/homeserver.yaml
           {{- with .resources }}
           resources:
-            {{ toYaml . | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .securityContext }}
           securityContext:
@@ -91,7 +98,7 @@ spec:
               port: http
           {{- with .resources }}
           resources:
-            {{ toYaml . | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .securityContext }}
           securityContext:

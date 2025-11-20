@@ -33,25 +33,46 @@ synapse:
   # postgres:
     # host:
     #   value: synapse
+    #
+    #   secretName:
+    #   secretKey:
+
     # port:
     #   value: 5432
+    #
+    #   secretName:
+    #   secretKey:
+
     # database:
     #   value: synapse
+    #
+    #   secretName:
+    #   secretKey:
+
     # user:
     #   value: synapse
+    #
+    #   secretName:
+    #   secretKey:
 
     # password:
+    #   value:
+    #
     #   secretName: postgres-secret
     #   secretKey: password
 
   ## Secret containing a key to sign events and federation requests with.
   # signingKey:
+  #   value:
+  #
   #   secretName:
   #   secretKey:
 
   ## Secret containing a key used to sign various other Synapse tokens.
   ## See https://element-hq.github.io/synapse/latest/usage/configuration/config_documentation.html#macaroon_secret_key for more details.
   # macaroonKey:
+  #   value:
+  #
   #   secretName:
   #   secretKey:
 

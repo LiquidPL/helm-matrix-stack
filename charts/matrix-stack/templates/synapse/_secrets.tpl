@@ -42,50 +42,84 @@ SYNAPSE_POSTGRES_PASSWORD
 {{- end }}
 {{- end }}
 
+{{- define "matrix-stack.synapse.provided-secret-data" -}}
+{{- $root := .root -}}
+{{- with required "matrix-stack.synapse.provided-secret-data missing context" .context -}}
+{{- with (.signingKey).value }}
+{{ include "matrix-stack.synapse.secret-keys.signing-key" . }}: {{ . | b64enc }}
+{{- end }}
+{{- with (.macaroonKey).value }}
+{{ include "matrix-stack.synapse.secret-keys.macaroon-key" . }}: {{ . | b64enc }}
+{{- end }}
+{{- with .postgres }}
+{{- with .host.value }}
+{{ include "matrix-stack.synapse.secret-keys.postgres-host" . }}: {{ . | b64enc }}
+{{- end }}
+{{- with (.port).value }}
+{{ include "matrix-stack.synapse.secret-keys.postgres-port" . }}: {{ . | b64enc }}
+{{- end }}
+{{- with .database.value }}
+{{ include "matrix-stack.synapse.secret-keys.postgres-database" . }}: {{ . | b64enc }}
+{{- end }}
+{{- with .user.value }}
+{{ include "matrix-stack.synapse.secret-keys.postgres-user" . }}: {{ . | b64enc }}
+{{- end }}
+{{- with .password.value }}
+{{ include "matrix-stack.synapse.secret-keys.postgres-password" . }}: {{ . | b64enc }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
 {{- define "matrix-stack.synapse.secrets" -}}
 {{- $root := .root -}}
-{{- if include "matrix-stack.synapse.generated-secrets" . }}
+{{- with required "matrix-stack.synapse.secrets missing context" .context }}
+{{- if include "matrix-stack.synapse.generated-secrets" (dict "context" . "root" $root) }}
 - secretName: {{ include "matrix-stack.fullname" $root }}-synapse-generated
 {{- end }}
-{{- with required "matrix-stack.synapse.secrets missing context" .context }}
-{{- with .signingKey }}
-- secretName: {{ .secretName }}
+{{- if include "matrix-stack.synapse.provided-secret-data" (dict "context" . "root" $root) }}
+- secretName: {{ include  "matrix-stack.fullname" $root}}-synapse
 {{- end }}
-{{- with .macaroonKey }}
-- secretName: {{ .secretName }}
+{{- with (.signingKey).secretName }}
+- secretName: {{ . }}
 {{- end }}
-{{- include "matrix-stack.synapse.postgres-secrets" (dict "context" .postgres "root" $) }}
+{{- with (.macaroonKey).secretName }}
+- secretName: {{ . }}
+{{- end }}
+{{- include "matrix-stack.synapse.postgres-secrets" (dict "context" .postgres "root" $root) }}
 {{- end }}
 {{- end }}
 
 {{- define "matrix-stack.synapse.postgres-secrets" -}}
+{{- $root := .root -}}
 {{- with required "matrix-stack.synapse.postgres-secrets missing context" .context -}}
-{{- $secrets := list -}}
-{{- with .host -}}
-{{- if hasKey . "secretName" -}}
-{{- $secrets = append $secrets (set . "property" "host") -}}
+{{- with .host }}
+{{ include "matrix-stack.synapse.postgres-secret" (dict "context" (dict "value" . "valueName" "host") "root" $root) }}
+{{- end }}
+{{- with .port }}
+{{- if .port }}
+{{ include "matrix-stack.synapse.postgres-secret" (dict "context" (dict "value" . "valueName" "port") "root" $root) }}
 {{- end }}
 {{- end }}
-{{- with .port -}}
-{{- if hasKey . "secretName" -}}
-{{- $secrets = append $secrets (set . "property" "port") -}}
+{{- with .database }}
+{{ include "matrix-stack.synapse.postgres-secret" (dict "context" (dict "value" . "valueName" "database") "root" $root) }}
+{{- end }}
+{{- with .user }}
+{{ include "matrix-stack.synapse.postgres-secret" (dict "context" (dict "value" . "valueName" "user") "root" $root) }}
+{{- end }}
+{{- with .password }}
+{{ include "matrix-stack.synapse.postgres-secret" (dict "context" (dict "value" . "valueName" "password") "root" $root) }}
 {{- end }}
 {{- end }}
-{{- with .database -}}
-{{- if hasKey . "secretName" -}}
-{{- $secrets = append $secrets (set . "property" "database") -}}
 {{- end }}
+
+{{- define "matrix-stack.synapse.postgres-secret" -}}
+{{- $root := .root -}}
+{{- with required "matrix-stack.synapse.postgres-secret missing context" .context -}}
+{{- if hasKey .value "secretName" }}
+{{ list (dict "property" .valueName "secretName" .value.secretName) | toYaml }}
+{{- else }}
+{{ list (dict "property" .valueName "secretName" (printf "%s-synapse" (include "matrix-stack.fullname" $root))) | toYaml }}
 {{- end }}
-{{- with .user -}}
-{{- if hasKey . "secretName" -}}
-{{- $secrets = append $secrets (set . "property" "user") -}}
-{{- end }}
-{{- end }}
-{{- with .password -}}
-{{- if hasKey . "secretName" -}}
-{{- $secrets = append $secrets (set . "property" "password") -}}
-{{- end }}
-{{- end }}
-{{ $secrets | toYaml }}
 {{- end }}
 {{- end }}

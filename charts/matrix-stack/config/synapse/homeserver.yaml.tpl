@@ -14,11 +14,11 @@ listeners:
 database:
   name: psycopg2
   args:
-    host: {{ ternary .host.value "__SYNAPSE_POSTGRES_HOST__" (hasKey .host "value") }}
-    port: {{ if not (hasKey . "port") }}5432{{ else }}{{ ternary .port.value "__SYNAPSE_POSTGRES_PORT__" (hasKey .port "value") }}{{ end }}
-    database: {{ ternary .database.value "__SYNAPSE_POSTGRES_DATABASE__" (hasKey .database "value") }}
-    user: {{ ternary .user.value "__SYNAPSE_POSTGRES_USER__" (hasKey .user "value") }}
-    password: {{ ternary .password.value "__SYNAPSE_POSTGRES_PASSWORD__" (hasKey .password "value") }}
+    host: __SYNAPSE_POSTGRES_HOST__
+    port: {{ if not (hasKey . "port") }}5432{{ else }}__SYNAPSE_POSTGRES_PORT__{{ end }}
+    database: __SYNAPSE_POSTGRES_DATABASE__
+    user: __SYNAPSE_POSTGRES_USER__
+    password: __SYNAPSE_POSTGRES_PASSWORD__
 {{- end }}
 
 log_config: /config/log_config.yaml

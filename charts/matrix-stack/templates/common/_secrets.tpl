@@ -34,7 +34,11 @@ There are several cases that need to be handled here:
 {{- $initSecretKey := required "matrix-stack.common.secret-path missing initSecretKey" .initSecretKey -}}
 {{- $value := (include "matrix-stack.common.value-from-path" (dict "root" $root "context" $valuePath) | fromJson) -}}
 {{- if $value -}}
+{{- if $value.secretName -}}
 {{ $value.secretName }}/{{ $value.secretKey }}
+{{- else -}}
+{{ include "matrix-stack.fullname" $root }}-{{ kebabcase $component }}/{{ $initSecretKey }}
+{{- end -}}
 {{- else -}}
 {{- if $root.Values.initSecrets.enabled -}}
 {{ include "matrix-stack.fullname" $root }}-{{ kebabcase $component }}-generated/{{ $initSecretKey }}
