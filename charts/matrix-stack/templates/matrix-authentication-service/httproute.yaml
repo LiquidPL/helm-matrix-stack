@@ -29,6 +29,10 @@ spec:
           kind: Service
           name: {{ include "matrix-stack.fullname" $ }}-matrix-authentication-service
           port: 8080
+      {{ with .filters }}
+      filters:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

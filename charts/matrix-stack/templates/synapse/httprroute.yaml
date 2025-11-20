@@ -30,6 +30,10 @@ spec:
           kind: Service
           name: {{ include "matrix-stack.fullname" $ }}-synapse
           port: 8008
+      {{ with .filters }}
+      filters:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
     - matches:
         {{- include "matrix-stack.synapse.mas-httproute-paths" (dict "context" . "root" $) | indent 8 }}
       backendRefs:
@@ -37,6 +41,10 @@ spec:
           kind: Service
           name: {{ include "matrix-stack.fullname" $ }}-matrix-authentication-service
           port: 8080
+      {{ with .filters }}
+      filters:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

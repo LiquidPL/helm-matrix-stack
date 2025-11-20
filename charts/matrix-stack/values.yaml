@@ -168,6 +168,9 @@ synapse:
     ## List of the resources this HTTPRoute should be attached to.
     parentRefs: []
 
+    ## List of filters to be applied to the rules of this HTTPRoute.
+    filters: []
+
   # resources:
   #   requests:
   #     cpu:
@@ -331,6 +334,9 @@ matrixAuthenticationService:
     ## List of the resources this HTTPRoute should be attached to.
     parentRefs: []
 
+    ## List of filters to be applied to the rules of this HTTPRoute.
+    filters: []
+
   # resources:
   #   requests:
   #     cpu:
@@ -482,6 +488,9 @@ wellKnownDelegation:
 
     ## List of the resources this HTTPRoute should be attached to.
     parentRefs: []
+
+    ## List of filters to be applied to the rules of this HTTPRoute.
+    filters: []
 
   livenessProbe:
     failureThreshold: 6

@@ -393,6 +393,10 @@
         "parentRefs": {
           "type": "array",
           "description": "List of the resources this HTTPRoute should be attached to."
+        },
+        "filters": {
+          "type": "array",
+          "description": "List of filters to be applied to the rules of this HTTPRoute."
         }
       }
     }
