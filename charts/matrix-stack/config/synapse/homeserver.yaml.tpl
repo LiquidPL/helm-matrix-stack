@@ -59,4 +59,7 @@ matrix_authentication_service:
       )
     )
   }}
+
+experimental_features:
+  msc4108_enabled: true
 {{- end }}
