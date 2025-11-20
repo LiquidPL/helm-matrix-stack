@@ -75,7 +75,6 @@ There are several cases that need to be handled here:
 {{- if not (has .secretName $usedSecrets) }}
 - name: {{ .secretName }}
   mountPath: /secrets/{{ .secretName }}
-  defaultMode: 0400
 {{- if .mountSubPath }}
   subPath: {{ .secretKey }}
 {{- end }}
