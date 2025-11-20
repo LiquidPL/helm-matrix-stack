@@ -5,6 +5,10 @@ load('ext://helm_resource', 'helm_resource', 'helm_repo')
 dotenv()
 
 namespace_create('matrix-stack')
+k8s_resource(
+    new_name='namespace',
+    objects=['matrix-stack:namespace']
+)
 
 helm_resource(
     'ingress-nginx',
@@ -21,10 +25,17 @@ helm_resource(
 )
 k8s_kind('Cluster', api_version='postgres.cnpg.io/v1', image_json_path='{.spec.imageName}', pod_readiness='wait')
 
-k8s_yaml('./dev/postgres.yaml')
+k8s_yaml('./dev/postgres-synapse.yaml')
 k8s_resource(
     new_name='postgres-synapse',
     objects=['postgres-synapse'],
+    resource_deps=['cloudnative-pg'],
+)
+
+k8s_yaml('./dev/postgres-mas.yaml')
+k8s_resource(
+    new_name='postgres-mas',
+    objects=['postgres-mas'],
     resource_deps=['cloudnative-pg'],
 )
 
@@ -36,6 +47,16 @@ k8s_yaml(helm(
 ))
 
 k8s_resource(
+    'matrix-stack-init-secrets',
+    new_name='init-secrets',
+    objects=[
+        'matrix-stack-init-secrets:serviceaccount',
+        'matrix-stack-init-secrets:role',
+        'matrix-stack-init-secrets:rolebinding',
+    ],
+)
+
+k8s_resource(
     'matrix-stack-synapse',
     new_name='synapse',
     objects=[
@@ -44,6 +65,20 @@ k8s_resource(
         'matrix-stack-synapse-media:persistentvolumeclaim',
     ],
     resource_deps=['postgres-synapse'],
+    links=[
+        os.getenv('HOMESERVER_HOST'),
+    ],
+)
+
+k8s_resource(
+    'matrix-stack-matrix-authentication-service',
+    new_name='mas',
+    objects=[
+        'matrix-stack-matrix-authentication-service:configmap',
+        'matrix-stack-matrix-authentication-service:ingress',
+        'matrix-stack-matrix-authentication-service:secret',
+    ],
+    resource_deps=['postgres-mas'],
     links=[
         os.getenv('HOMESERVER_HOST'),
     ],

@@ -45,4 +45,17 @@ macaroon_secret_key_path: /secrets/{{
     )
   )
 }}
+
+matrix_authentication_service:
+  enabled: true
+  endpoint: http://{{ include "matrix-stack.fullname" $root }}-matrix-authentication-service:8080
+  secret_path: /secrets/{{
+    include "matrix-stack.common.secret-path" (dict
+      "root" $root
+      "context" (dict
+        "valuePath" "matrixAuthenticationService.synapseSecret"
+        "initSecretKey" (include "matrix-stack.matrix-authentication-service.secret-keys.synapse-secret" .)
+      )
+    )
+  }}
 {{- end }}

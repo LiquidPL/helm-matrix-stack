@@ -18,5 +18,6 @@ app.kubernetes.io/instance: {{ include "matrix-stack.fullname" $.root }}-init-se
 {{- $root := .root -}}
 {{- with required "matrix-stack.init-secrets.generated-secrets missing context" .context -}}
 {{- include "matrix-stack.synapse.generated-secrets" (dict "context" $root.Values.synapse "root" $root) -}}
+{{- include "matrix-stack.matrix-authentication-service.generated-secrets" (dict "context" $root.Values.matrixAuthenticationService "root" $root) -}}
 {{- end }}
 {{- end }}

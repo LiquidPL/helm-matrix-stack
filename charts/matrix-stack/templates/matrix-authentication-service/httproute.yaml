@@ -1,0 +1,34 @@
+{{- if .Values.synapse.enabled -}}
+{{- with .Values.matrixAuthenticationService.httpRoute -}}
+{{- if .enabled -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  labels:
+    {{- include "matrix-stack.matrix-authentication-service.labels" (dict "context" $.Values.matrixAuthenticationService "root" $) | nindent 4 }}
+  {{- with deepCopy $.Values.matrixAuthenticationService.annotations | merge .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  name: {{ include "matrix-stack.fullname" $ }}-matrix-authentication-service
+  namespace: {{ $.Release.Namespace }}
+spec:
+  {{- with .parentRefs }}
+  parentRefs:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  hostnames:
+    - {{ $.Values.matrixAuthenticationService.host }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: {{ include "matrix-stack.fullname" $ }}-matrix-authentication-service
+          port: 8080
+{{- end }}
+{{- end }}
+{{- end }}

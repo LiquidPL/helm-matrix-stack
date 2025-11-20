@@ -140,7 +140,7 @@ synapse:
     seccompProfile:
       type: RuntimeDefault
 
-  ## Hostname of this Synapse deployment.
+  ## Hostname of this component.
   host: # matrix.chat.localhost
 
   ## Configuration for the Ingress resource.
@@ -192,6 +192,169 @@ synapse:
 
   startupProbe:
     failureThreshold: 30
+    initialDelaySeconds: 0
+    periodSeconds: 2
+    successThreshold: 1
+    timeoutSeconds: 1
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+matrixAuthenticationService:
+  ## PostgreSQL connection details
+  ## Contains the connection credentials for the PostgreSQL
+  ## database used for data storage.
+  ## Values can be provided either directly in the values file,
+  ## or as a reference to a Kubernetes secret.
+  # postgres:
+    # uri:
+    #   value: postgresql://<user>:<password>@<host>/<database>
+    # host:
+    #   value: mas
+    # port:
+    #   value: 5432
+    # database:
+    #   value: mas
+    # user:
+    #   value: mas
+
+    # password:
+    #   secretName: mas-postgres-secret
+    #   secretKey: password
+
+  ## Shared secret used to authenticate the service to Synapse.
+  # synapseSecret:
+  #   value:
+  #
+  #   secretName:
+  #   secretKey:
+
+  ## Encryption secret used for encrypting cookies and database fields.
+  # encryptionSecret:
+  #   value:
+  #
+  #   secretName:
+  #   secretKey:
+
+  ## Signing keys. By default only the RSA and ECDSA P-256 keys are generated,
+  ## the other ones need to be provided manually.
+  ## See https://element-hq.github.io/matrix-authentication-service/reference/configuration.html#singing-keys.
+  # privateKeys:
+    ## RSA key.
+    # rsa:
+    #   value:
+    #
+    #   secretName:
+    #   secretKey:
+
+    ## ECDSA with the P-256 curve.
+    # ecdsaPrime256v1:
+    #   value:
+    #
+    #   secretName:
+    #   secretKey:
+
+    ## ECDSA with the P-384 curve.
+    # ecdsaSecp384r1:
+    #   value:
+    #
+    #   secretName:
+    #   secretKey:
+
+    ## ECDSA with the K-256 curve.
+    # ecdsaSecp256k1:
+    #   value:
+    #
+    #   secretName:
+    #   secretKey:
+
+  image:
+    registry: ghcr.io
+    repository: element-hq/matrix-authentication-service
+    tag: 1.6.0
+    digest: sha256:15fdb4665aa339261d4352c058c221470d040a04cd59117c3956994d9e8edc27
+
+    ## Overrides the default pull policy for this image.
+    # pullPolicy:
+
+    ## Pull secrets that should be used for this image.
+    pullSecrets: []
+
+  annotations: {}
+  labels: {}
+
+  securityContext:
+    privileged: false
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+  podSecurityContext:
+    runAsUser: 1023
+    runAsNonRoot: true
+    runAsGroup: 1023
+    fsGroup: 1023
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile:
+      type: RuntimeDefault
+
+  ## Hostname of this component.
+  host: # auth.chat.localhost
+
+  ## Configuration for the Ingress resource.
+  ingress:
+    ## Whether an Ingress should be created for this component.
+    enabled: false
+
+    ## IngressClass to be used for this Ingress.
+    className:
+
+    ## Additional annotations to be applied to the Ingress resource.
+    annotations: {}
+
+    ## Whether TLS should be enabled for this Ingress.
+    tls: false
+
+  ## Configuration for the HTTPRoute resource.
+  httpRoute:
+    ## Whether a HTTPRoute should be created for this component.
+    enabled: false
+
+    ## Additional annotations to be applied on the HTTPRoute resource.
+    annotations: {}
+
+    ## List of the resources this HTTPRoute should be attached to.
+    parentRefs: []
+
+  # resources:
+  #   requests:
+  #     cpu:
+  #     memory:
+  #   limits:
+  #     cpu:
+  #     memory:
+
+  livenessProbe:
+    failureThreshold: 6
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 2
+
+  readinessProbe:
+    failureThreshold: 6
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 2
+
+  startupProbe:
+    failureThreshold: 6
     initialDelaySeconds: 0
     periodSeconds: 2
     successThreshold: 1

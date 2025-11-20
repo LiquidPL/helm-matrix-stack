@@ -87,28 +87,41 @@ SYNAPSE_POSTGRES_PASSWORD
 - secretName: {{ . }}
 {{- end }}
 {{- include "matrix-stack.synapse.postgres-secrets" (dict "context" .postgres "root" $root) }}
+{{- with $root.Values.matrixAuthenticationService }}
+{{- if (.synapseSecret).secretName }}
+{{ list (pick .synapseSecret "secretName") | toYaml }}
+{{- else if (.synapseSecret).value }}
+- secretName: {{ include "matrix-stack.fullname" $root }}-matrix-authentication-service
+{{- else }}
+- secretName: {{ include "matrix-stack.fullname" $root }}-matrix-authentication-service-generated
+{{- end }}
+  mountSubPath: true
+{{- end }}
 {{- end }}
 {{- end }}
 
 {{- define "matrix-stack.synapse.postgres-secrets" -}}
 {{- $root := .root -}}
 {{- with required "matrix-stack.synapse.postgres-secrets missing context" .context -}}
+{{- $secrets := list -}}
+{{- $providedSecret := printf "%s-synapse" (include "matrix-stack.fullname" $root) -}}
 {{- with .host }}
-{{ include "matrix-stack.synapse.postgres-secret" (dict "context" (dict "value" . "valueName" "host") "root" $root) }}
+{{- $secrets = append $secrets (dict "property" "host" "secretName" (.secretName | default $providedSecret)) -}}
 {{- end }}
 {{- with .port }}
-{{- if .port }}
-{{ include "matrix-stack.synapse.postgres-secret" (dict "context" (dict "value" . "valueName" "port") "root" $root) }}
-{{- end }}
+{{- $secrets = append $secrets (dict "property" "port" "secretName" (.secretName | default $providedSecret)) -}}
 {{- end }}
 {{- with .database }}
-{{ include "matrix-stack.synapse.postgres-secret" (dict "context" (dict "value" . "valueName" "database") "root" $root) }}
+{{- $secrets = append $secrets (dict "property" "database" "secretName" (.secretName | default $providedSecret)) -}}
 {{- end }}
 {{- with .user }}
-{{ include "matrix-stack.synapse.postgres-secret" (dict "context" (dict "value" . "valueName" "user") "root" $root) }}
+{{- $secrets = append $secrets (dict "property" "user" "secretName" (.secretName | default $providedSecret)) -}}
 {{- end }}
 {{- with .password }}
-{{ include "matrix-stack.synapse.postgres-secret" (dict "context" (dict "value" . "valueName" "password") "root" $root) }}
+{{- $secrets = append $secrets (dict "property" "password" "secretName" (.secretName | default $providedSecret)) -}}
+{{- end }}
+{{- if $secrets }}
+{{ $secrets | toYaml }}
 {{- end }}
 {{- end }}
 {{- end }}

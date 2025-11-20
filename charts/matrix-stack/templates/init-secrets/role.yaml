@@ -19,6 +19,7 @@ rules:
     {{- $resourceNames := list -}}
     {{- if $.Values.synapse.enabled -}}
     {{- $resourceNames = append $resourceNames (printf "%s-synapse-generated" (include "matrix-stack.fullname" $)) -}}
+    {{- $resourceNames = append $resourceNames (printf "%s-matrix-authentication-service-generated" (include "matrix-stack.fullname" $)) -}}
     {{- end -}}
     {{- with $resourceNames }}
     resourceNames:

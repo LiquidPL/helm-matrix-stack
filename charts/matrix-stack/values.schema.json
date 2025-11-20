@@ -119,31 +119,7 @@
             }
           }
         },
-        "image": {
-          "type": "object",
-          "properties": {
-            "registry": {
-              "type": "string"
-            },
-            "repository": {
-              "type": "string"
-            },
-            "tag": {
-              "type": "string"
-            },
-            "digest": {
-              "type": "string"
-            },
-            "pullPolicy": {
-              "type": "string",
-              "description": "Overrides the default pull policy for this image."
-            },
-            "pullSecrets": {
-              "$ref": "#/$defs/pullSecrets",
-              "description": "Pull secrets that should be used for this image."
-            }
-          }
-        },
+        "image": { "$ref": "#/$defs/image" },
         "annotations": {
           "type": "object",
           "additionalProperties": {
@@ -158,56 +134,118 @@
         },
         "host": {
           "type": "string",
-          "description": "Hostname of this Synapse deployment."
+          "description": "Hostname of this component."
         },
-        "ingress": {
-          "type": "object",
-          "description": "Configuration for the Ingress resource.",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "description": "Whether an Ingress should be created for this component."
-            },
-            "className": {
-              "type": "string",
-              "description": "IngressClass to be used for this Ingress."
-            },
-            "annotations": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "string"
-              },
-              "description": "Additional annotations to be applied to the Ingress resource."
-            },
-            "tls": {
-              "type": "boolean",
-              "description": "Whether TLS should be enabled for this Ingress."
-            }
-          }
-        },
-        "httpRoute": {
-          "type": "object",
-          "description": "Configuration for the HTTPRoute resource.",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "description": "Whether a HTTPRoute should be created for this component."
-            },
-            "annotations": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "string"
-              },
-              "description": "Additional annotations to be applied on the HTTPRoute resource."
-            },
-            "parentRefs": {
-              "type": "array",
-              "description": "List of the resources this HTTPRoute should be attached to."
-            }
-          }
-        }
+        "ingress": { "$ref": "#/$defs/ingress" },
+        "httpRoute": { "$ref": "#/$defs/httpRoute" }
       },
       "required": ["host"]
+    },
+    "matrixAuthenticationService": {
+      "type": "object",
+      "description": "Authentication service providing modern OICD login support to Synapse.",
+      "properties": {
+        "postgres": {
+          "type": "object",
+          "title": "PostgreSQL connection details",
+          "description": "Contains the connection credentials for the PostgreSQL database used for data storage. Values can be provided either directly in the values file, or as a reference to a Kubernetes secret.",
+          "oneOf": [
+            {
+              "properties": {
+                "host": {
+                  "title": "Hostname",
+                  "$ref": "#/$defs/secretValueString"
+                },
+                "port": {
+                  "title": "Port",
+                  "$ref": "#/$defs/secretValueInteger"
+                },
+                "database": {
+                  "title": "Database name",
+                  "$ref": "#/$defs/secretValueString"
+                },
+                "user": {
+                  "title": "User name",
+                  "$ref": "#/$defs/secretValueString"
+                },
+                "password": {
+                  "title": "Password",
+                  "$ref": "#/$defs/secretValueString"
+                }
+              },
+              "required": ["host", "database", "user", "password"],
+              "additionalProperties": false
+            },
+            {
+              "properties": {
+                "uri": {
+                  "title": "Connection URI",
+                  "$ref": "#/$defs/secretValueString"
+                }
+              },
+              "required": ["uri"],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "synapseSecret": {
+          "type": "object",
+          "title": "Synapse shared secret",
+          "description": "Shared secret used to authenticate the service to Synapse.",
+          "$ref": "#/$defs/secretValueString"
+        },
+        "encryptionSecret": {
+          "type": "object",
+          "title": "Encryption secret",
+          "description": "Encryption secret used for encrypting cookies and database fields.",
+          "$ref": "#/$defs/secretValueString"
+        },
+        "privateKeys": {
+          "type": "object",
+          "title": "Signing keys",
+          "properties": {
+            "rsa": {
+              "type": "object",
+              "title": "RSA key",
+              "$ref": "#/$defs/secretValueString"
+            },
+            "ecdsaPrime256v1": {
+              "type": "object",
+              "title": "ECDSA with the P-256 curve.",
+              "$ref": "#/$defs/secretValueString"
+            },
+            "ecdsaSecp384r1": {
+              "type": "object",
+              "title": "ECDSA with the P-384 curve.",
+              "$ref": "#/$defs/secretValueString"
+            },
+            "ecdsaSecp256k1": {
+              "type": "object",
+              "title": "ECDSA with the K-256 curve.",
+              "$ref": "#/$defs/secretValueString"
+            }
+          }
+        },
+        "image": { "$ref": "#/$defs/image" },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "host": {
+          "type": "string",
+          "description": "Hostname of this component."
+        },
+        "ingress": { "$ref": "#/$defs/ingress" },
+        "httpRoute": { "$ref": "#/$defs/httpRoute" }
+      }
     },
     "wellKnownDelegation": {
       "type": "object",
@@ -284,6 +322,77 @@
           "name": {
             "type": "string"
           }
+        }
+      }
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "registry": {
+          "type": "string"
+        },
+        "repository": {
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "digest": {
+          "type": "string"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "description": "Overrides the default pull policy for this image."
+        },
+        "pullSecrets": {
+          "$ref": "#/$defs/pullSecrets",
+          "description": "Pull secrets that should be used for this image."
+        }
+      }
+    },
+    "ingress": {
+      "type": "object",
+      "description": "Configuration for the Ingress resource.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether an Ingress should be created for this component."
+        },
+        "className": {
+          "type": "string",
+          "description": "IngressClass to be used for this Ingress."
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Additional annotations to be applied to the Ingress resource."
+        },
+        "tls": {
+          "type": "boolean",
+          "description": "Whether TLS should be enabled for this Ingress."
+        }
+      }
+    },
+    "httpRoute": {
+      "type": "object",
+      "description": "Configuration for the HTTPRoute resource.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether a HTTPRoute should be created for this component."
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Additional annotations to be applied on the HTTPRoute resource."
+        },
+        "parentRefs": {
+          "type": "array",
+          "description": "List of the resources this HTTPRoute should be attached to."
         }
       }
     }

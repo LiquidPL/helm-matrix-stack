@@ -1,0 +1,18 @@
+{{- if .Values.synapse.enabled -}}
+{{- with .Values.matrixAuthenticationService -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    {{- include "matrix-stack.matrix-authentication-service.labels" (dict "context" . "root" $) | nindent 4 }}
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  name: {{ include "matrix-stack.fullname" $ }}-matrix-authentication-service
+  namespace: {{ $.Release.Namespace }}
+data:
+  config.yaml: |
+    {{- (tpl ($.Files.Get "config/matrix-authentication-service/config.yaml.tpl") (dict "context" . "root" $)) | nindent 4 }}
+{{- end }}
+{{- end }}

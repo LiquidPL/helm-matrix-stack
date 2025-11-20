@@ -28,6 +28,7 @@ spec:
                 name: {{ include "matrix-stack.fullname" $ }}-synapse
                 port:
                   number: 8008
+          {{- include "matrix-stack.synapse.mas-ingress-paths" (dict "context" . "root" $) | indent 10 }}
   {{- if .tls }}
   tls:
     - hosts:
