@@ -51,7 +51,7 @@ spec:
                 {{- end }}
                 {{ $secrets | join " | " }}
                 {{- end }}
-              ' /templates/homeserver.yaml > /config/homeserver.yaml
+              ' /templates/homeserver.yaml > /config/homeserver.yaml && chmod 0400 /config/homeserver.yaml
           {{- with .resources }}
           resources:
             {{- toYaml . | nindent 12 }}
