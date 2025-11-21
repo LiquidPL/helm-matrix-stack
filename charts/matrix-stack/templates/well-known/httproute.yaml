@@ -30,10 +30,14 @@ spec:
           kind: Service
           name: {{ include "matrix-stack.fullname" $ }}-well-known-delegation
           port: 8080
-      {{ with .filters }}
       filters:
+        - type: CORS
+          cors:
+            allowOrigins:
+              - '*'
+        {{- with .filters }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
