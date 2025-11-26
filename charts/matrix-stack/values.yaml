@@ -372,58 +372,6 @@ matrixAuthenticationService:
 
   affinity: {}
 
-initSecrets:
-  enabled: true
-
-  rbac:
-    create: true
-
-  image:
-    registry: ghcr.io
-    repository: element-hq/ess-helm/matrix-tools
-    tag: 0.5.6
-    digest: sha256:ba7f3de19a082d11416d5ab9c8aa280af6ab04f139995ea59462a107def12379
-
-    ## Overrides the default pull policy for this image.
-    # pullPolicy:
-
-    ## Pull secrets that should be used for this image.
-    pullSecrets: []
-
-  annotations: {}
-  labels: {}
-
-  securityContext:
-    privileged: false
-    allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: true
-    capabilities:
-      drop:
-        - ALL
-
-  podSecurityContext:
-    runAsUser: 1023
-    runAsNonRoot: true
-    runAsGroup: 1023
-    fsGroup: 1023
-    fsGroupChangePolicy: OnRootMismatch
-    seccompProfile:
-      type: RuntimeDefault
-
-  # resources:
-  #   requests:
-  #     cpu:
-  #     memory:
-  #   limits:
-  #     cpu:
-  #     memory:
-
-  nodeSelector: {}
-
-  tolerations: []
-
-  affinity: {}
-
 ## Deploys a small Nginx container available at `serverName` serving
 ## the well-known files necessary to delegate traffic to the homeserver
 ## subdomain.
@@ -512,6 +460,59 @@ wellKnownDelegation:
     periodSeconds: 2
     successThreshold: 1
     timeoutSeconds: 1
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+matrixTools:
+  image:
+    registry: ghcr.io
+    repository: element-hq/ess-helm/matrix-tools
+    tag: 0.5.6
+    digest: sha256:ba7f3de19a082d11416d5ab9c8aa280af6ab04f139995ea59462a107def12379
+
+    ## Overrides the default pull policy for this image.
+    # pullPolicy:
+
+    ## Pull secrets that should be used for this image.
+    pullSecrets: []
+
+initSecrets:
+  enabled: true
+
+  rbac:
+    create: true
+
+  annotations: {}
+  labels: {}
+
+  securityContext:
+    privileged: false
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+  podSecurityContext:
+    runAsUser: 1023
+    runAsNonRoot: true
+    runAsGroup: 1023
+    fsGroup: 1023
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile:
+      type: RuntimeDefault
+
+  # resources:
+  #   requests:
+  #     cpu:
+  #     memory:
+  #   limits:
+  #     cpu:
+  #     memory:
 
   nodeSelector: {}
 

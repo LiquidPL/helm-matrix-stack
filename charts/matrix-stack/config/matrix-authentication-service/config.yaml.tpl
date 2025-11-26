@@ -23,13 +23,13 @@ http:
 {{- with .postgres }}
 database:
 {{- if .uri }}
-  uri: __MAS_POSTGRES_URI__
+  uri: ${MAS_POSTGRES_URI}
 {{- else }}
-  host: __MAS_POSTGRES_HOST__
-  port: {{ if not (hasKey . "port") }}5432{{ else }}__MAS_POSTGRES_PORT__{{ end }}
-  database: __MAS_POSTGRES_DATABASE__
-  username: __MAS_POSTGRES_USER__
-  password: __MAS_POSTGRES_PASSWORD__
+  host: ${MAS_POSTGRES_HOST}
+  port: {{ if not (hasKey . "port") }}5432{{ else }}${MAS_POSTGRES_PORT}{{ end }}
+  database: ${MAS_POSTGRES_DATABASE}
+  username: ${MAS_POSTGRES_USER}
+  password: ${MAS_POSTGRES_PASSWORD}
 {{- end }}
 {{- end }}
 

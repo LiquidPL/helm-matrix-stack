@@ -15,4 +15,4 @@ Planned in the future:
 
 ## License attribution
 
-This project uses the `matrix-tools` utility from Element's [ESS Community](https://github.com/element-hq/ess-helm) Helm chart for the purpose of generating Synapse/MAS secrets. Licensed under the GNU Affero General Public License, version v3.0.
+This project uses the `matrix-tools` utility from Element's [ESS Community](https://github.com/element-hq/ess-helm) Helm chart for the purpose of generating Synapse/MAS secrets, as well as processing configuration files. Licensed under the GNU Affero General Public License, version v3.0.

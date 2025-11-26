@@ -29,7 +29,7 @@ spec:
       serviceAccountName: {{ include "matrix-stack.fullname" $ }}-init-secrets
       containers:
         - name: init-secrets
-          {{- include "matrix-stack.common.image" (dict "context" .image "root" $) | indent 10 }}
+          {{- include "matrix-stack.common.image" (dict "context" $.Values.matrixTools.image "root" $) | indent 10 }}
           args:
             - generate-secrets
             - -secrets

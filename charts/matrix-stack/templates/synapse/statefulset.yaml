@@ -31,27 +31,26 @@ spec:
       {{- end }}
       initContainers:
         - name: render-config
-          image: docker.io/mikefarah/yq:4.48.1@sha256:75b3a60dce1fa4641b0f02bdb4465eddc5da95e62028118a292239ca8e3921e5
-          command: ['/bin/sh']
+          {{- include "matrix-stack.common.image" (dict "context" $.Values.matrixTools.image "root" $) | indent 10 }}
           args:
-            - -c
-            - >-
-              yq '
-                {{- with .postgres }}
-                {{- $secrets := list -}}
-                {{- range (include "matrix-stack.synapse.postgres-secrets" (dict "context" . "root" $) | fromYamlArray) -}}
-                {{ $secretPath := include "matrix-stack.common.secret-path" (dict
-                  "context" (dict
-                    "valuePath" (printf "synapse.postgres.%s" .property)
-                    "initSecretKey" (include (printf "matrix-stack.synapse.secret-keys.postgres-%s" .property) .)
-                  )
-                  "root" $
-                ) }}
-                {{- $secrets = append $secrets (printf "(.. | select(. == \"__SYNAPSE_POSTGRES_%s__\")) = load(\"/secrets/%s\")" (.property | upper) $secretPath) -}}
-                {{- end }}
-                {{ $secrets | join " | " }}
-                {{- end }}
-              ' /templates/homeserver.yaml > /config/homeserver.yaml && chmod 0400 /config/homeserver.yaml
+            - render-config
+            - -output
+            - /config/homeserver.yaml
+            - /templates/homeserver.yaml
+          {{- with .postgres }}
+          env:
+            {{- range (include "matrix-stack.synapse.postgres-secrets" (dict "context" . "root" $) | fromYamlArray) -}}
+            {{- $secretPath := include "matrix-stack.common.secret-path" (dict
+              "context" (dict
+                "valuePath" (printf "synapse.postgres.%s" .property)
+                "initSecretKey" (include (printf "matrix-stack.synapse.secret-keys.postgres-%s" .property) .)
+              )
+              "root" $
+            ) }}
+            - name: {{ printf "SYNAPSE_POSTGRES_%s" .property | upper }}
+              value: '{{ printf "{{ readfile \"/secrets/%s\" | quote }}" $secretPath }}'
+            {{- end }}
+          {{- end }}
           {{- with .resources }}
           resources:
             {{- toYaml . | nindent 12 }}

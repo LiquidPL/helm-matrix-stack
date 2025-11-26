@@ -1,9 +1,10 @@
 {{- define "matrix-stack.init-secrets.labels" -}}
+{{- $root := .root -}}
 {{- with required "matrix-stack.init-secrets.labels missing context" .context -}}
 {{ include "matrix-stack.common.labels" $.root }}
 {{ include "matrix-stack.init-secrets.selector-labels" (dict "context" . "root" $.root) }}
 app.kubernetes.io/component: provisioning
-app.kubernetes.io/version: {{ .image.tag }}
+app.kubernetes.io/version: {{ $root.Values.matrixTools.image.tag }}
 {{- end }}
 {{- end }}
 
