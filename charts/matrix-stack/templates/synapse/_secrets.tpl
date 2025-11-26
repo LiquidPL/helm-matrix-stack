@@ -68,6 +68,9 @@ SYNAPSE_POSTGRES_PASSWORD
 {{ include "matrix-stack.synapse.secret-keys.postgres-password" . }}: {{ . | b64enc }}
 {{- end }}
 {{- end }}
+{{- with (.additionalConfig).value }}
+additional.yaml: {{ . | b64enc }}
+{{- end }}
 {{- end }}
 {{- end }}
 
@@ -87,6 +90,10 @@ SYNAPSE_POSTGRES_PASSWORD
 - secretName: {{ . }}
 {{- end }}
 {{- include "matrix-stack.synapse.postgres-secrets" (dict "context" .postgres "root" $root) }}
+{{/* we don't need to handle the provided secret case as it's already handled above */}}
+{{- with (.additionalConfig).secretName }}
+- secretName: {{ . }}
+{{- end }}
 {{- with $root.Values.matrixAuthenticationService }}
 {{- if (.synapseSecret).secretName }}
 {{ list (pick .synapseSecret "secretName") | toYaml }}

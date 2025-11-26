@@ -107,6 +107,9 @@ MAS_POSTGRES_PASSWORD
 {{ include "matrix-stack.matrix-authentication-service.secret-keys.postgres-password" . }}: {{ . | b64enc }}
 {{- end }}
 {{- end }}
+{{- with (.additionalConfig).value }}
+additional.yaml: {{ . | b64enc }}
+{{- end }}
 {{- end }}
 {{- end }}
 
@@ -138,6 +141,10 @@ MAS_POSTGRES_PASSWORD
 - secretName: {{ . }}
 {{- end }}
 {{- include "matrix-stack.matrix-authentication-service.postgres-secrets" (dict "context" .postgres "root" $root) }}
+{{/* we don't need to handle the provided secret case as it's already handled above */}}
+{{- with (.additionalConfig).secretName }}
+- secretName: {{ . }}
+{{- end }}
 {{- end }}
 {{- end }}
 

@@ -83,3 +83,17 @@ There are several cases that need to be handled here:
 {{- end }}
 {{- end }}
 {{- end }}
+
+{{- define "matrix-stack.common.additional-config" -}}
+{{- $root := .root -}}
+{{- with required "matrix-stack.common.additional-config missing context" .context -}}
+{{ $component := required "matrix-stack.common.additional-config missing component" .component }}
+{{- with .secret }}
+{{- if .value }}
+- /secrets/{{ include "matrix-stack.fullname" $root }}-{{ $component }}/additional.yaml
+{{- else }}
+- /secrets/{{ .secretName }}/{{ .secretKey }}
+{{- end }}
+{{- end }}
+{{- end -}}
+{{- end -}}

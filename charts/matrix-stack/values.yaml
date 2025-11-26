@@ -108,6 +108,18 @@ synapse:
     ## For more details see https://element-hq.github.io/synapse/latest/usage/configuration/config_documentation.html#max_upload_size.
     maxUploadSize: 50M
 
+  ## Additional configuration to be merged into the default config file.
+  ## See https://element-hq.github.io/synapse/latest/usage/configuration/config_documentation.html
+  ## for a full reference.
+  ## This can be provided either directly in the values file, or as a secret
+  ## reference, just like other configurable properties.
+  # additionalConfig:
+  #   value: |
+  #     <valid config>
+
+  #   secretName:
+  #   secretKey:
+
   image:
     registry: ghcr.io
     repository: element-hq/synapse
@@ -273,6 +285,18 @@ matrixAuthenticationService:
     #
     #   secretName:
     #   secretKey:
+
+  ## Additional configuration to be merged into the default config file.
+  ## See https://element-hq.github.io/matrix-authentication-service/reference/configuration.html
+  ## for a full reference.
+  ## This can be provided either directly in the values file, or as a secret
+  ## reference, just like other configurable properties.
+  # additionalConfig:
+  #   value: |
+  #     <valid config>
+
+  #   secretName:
+  #   secretKey:
 
   image:
     registry: ghcr.io

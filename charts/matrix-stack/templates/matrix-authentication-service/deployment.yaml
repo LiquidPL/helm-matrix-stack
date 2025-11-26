@@ -40,6 +40,7 @@ spec:
             - -output
             - /config/config.yaml
             - /templates/config.yaml
+            {{- include "matrix-stack.common.additional-config" (dict "context" (dict "secret" .additionalConfig "component" "matrix-authentication-service") "root" $) | indent 12 }}
           {{- with .postgres }}
           env:
             {{- range (include "matrix-stack.matrix-authentication-service.postgres-secrets" (dict "context" . "root" $) | fromYamlArray) -}}

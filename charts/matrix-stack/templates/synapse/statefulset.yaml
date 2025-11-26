@@ -37,6 +37,7 @@ spec:
             - -output
             - /config/homeserver.yaml
             - /templates/homeserver.yaml
+            {{- include "matrix-stack.common.additional-config" (dict "context" (dict "secret" .additionalConfig "component" "synapse") "root" $) | indent 12 }}
           {{- with .postgres }}
           env:
             {{- range (include "matrix-stack.synapse.postgres-secrets" (dict "context" . "root" $) | fromYamlArray) -}}

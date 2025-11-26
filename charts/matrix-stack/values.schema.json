@@ -119,6 +119,11 @@
             }
           }
         },
+        "additionalConfig": {
+          "type": "object",
+          "description": "Additional configuration to be merged into the default config file. See https://element-hq.github.io/synapse/latest/usage/configuration/config_documentation.html for a full reference.",
+          "$ref": "#/$defs/secretValueString"
+        },
         "image": { "$ref": "#/$defs/image" },
         "annotations": {
           "type": "object",
@@ -225,6 +230,11 @@
               "$ref": "#/$defs/secretValueString"
             }
           }
+        },
+        "additionalConfig": {
+          "type": "object",
+          "description": "Additional configuration to be merged into the default config file. See https://element-hq.github.io/matrix-authentication-service/reference/configuration.html for a full reference.",
+          "$ref": "#/$defs/secretValueString"
         },
         "image": { "$ref": "#/$defs/image" },
         "annotations": {
