@@ -13,7 +13,7 @@ metadata:
   namespace: {{ $.Release.Namespace }}
 spec:
   {{- with .storageClassName }}
-    storageClassName: {{ . }}
+  storageClassName: {{ . }}
   {{- end }}
   accessModes:
     - {{ .accessMode | default "ReadWriteOnce" }}
